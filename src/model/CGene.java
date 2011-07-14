@@ -11,28 +11,28 @@ public class CGene {
 	public List<Helix> helixes;
 	int minPosition;
 	int maxPosition;
-	int score;
-	
-	
+	int pairs;
 	
 	public CGene(List<Helix> helixes) {
 		super();
+		this.helixes = helixes;
+		minPosition = helixes.get(0).getLeft();
+		maxPosition = helixes.get(0).getRight();
+		pairs = 0;
+		for (Helix helix : helixes) {
+			minPosition = Math.min(minPosition, helixes.get(0).getLeft());
+			maxPosition = Math.max(maxPosition, helixes.get(0).getRight());
+			pairs += helix.len;
+		}
 	}
 
 	@Override
 	public String toString() {
-		Collections.sort(helixes, new Comparator<Helix>() {
-			@Override
-			public int compare(Helix arg0, Helix arg1) {
-				return arg0.start - arg1.start; 
-			}
-		});
-
+		return "Gene "+getScore()+" "+minPosition+"-"+maxPosition;
 	}
 
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
+	private double getScore() {
+		return pairs*2.0/(maxPosition - minPosition);
 	}
 
 }
