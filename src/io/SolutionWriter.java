@@ -7,8 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import javax.swing.text.html.MinimalHTMLWriter;
-
 import model.CGene;
 import model.Helix;
 
@@ -27,6 +25,8 @@ public class SolutionWriter {
 			};
 		});
 		for (CGene cGene : genes) {
+			out.println();
+			out.println("# "+cGene);
 			out.println(String.format("%d %d %d", cGene.minPosition + 1, cGene.maxPosition + 1, cGene.pairs));
 			Collections.sort(cGene.helixes, new Comparator<Helix>() {
 				@Override
@@ -43,9 +43,6 @@ public class SolutionWriter {
 		}
 
 		out.close();
-	}
-
-	public static void main(String[] args) {
 	}
 
 }
