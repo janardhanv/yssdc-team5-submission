@@ -36,7 +36,7 @@ public class SolutionWriter {
 			});
 			for (Helix helix : cGene.helixes) {
 				for (int i = helix.len; i >= 0; --i) {
-					out.write(helix.start - i + " " + helix.end + i);
+					out.println(helix.start - i + " " + helix.end + i);
 				}
 			}
 			
