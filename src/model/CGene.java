@@ -1,10 +1,6 @@
 package model;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-
-import algo.DynamicSolver.State;
 
 public class CGene {
 
@@ -31,8 +27,8 @@ public class CGene {
 		return "Gene "+getScore()+" "+minPosition+"-"+maxPosition;
 	}
 
-	private double getScore() {
-		return pairs*2.0/(maxPosition - minPosition);
+	public double getScore() {
+		return pairs*2.0/(maxPosition - minPosition + 1);
 	}
 
 }
