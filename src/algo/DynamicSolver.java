@@ -13,6 +13,7 @@ import org.apache.commons.lang.time.StopWatch;
 
 import model.CGene;
 import model.Constraints;
+import model.FamilyCriteria;
 import model.GlobalContext;
 import model.Helix;
 import utils.Utils;
@@ -45,6 +46,19 @@ public class DynamicSolver {
 				s.collectHelixes(helixes);
 			}
 		}
+		public void writeDebug(String prefix) {
+			Collections.sort(inner,new Comparator<State>() {
+				@Override
+				public int compare(State x, State y) {
+					return x.h.getRight() < y.h.getRight() ? -1 : 1;
+				}
+			});
+			System.out.println(prefix+h+" [");
+			for (State state : inner) {
+				state.writeDebug(prefix+"  ");
+			}
+			System.out.println(prefix+" ]");
+		}
 	}
 	
 	public State[] a;
@@ -60,9 +74,7 @@ public class DynamicSolver {
 		Arrays.sort(a,new Comparator<State>() {
 			@Override
 			public int compare(State x, State y) {
-				if (x.h.start == y.h.start && x.h.end == y.h.end)
-					return 0;
-				return x.h.end < y.h.end || x.h.end == y.h.end && x.h.start > y.h.start ? -1 : 1;
+				return x.h.getRight() - y.h.getRight();
 			}
 		});
 		State dummy = new State(new Helix(-1,-1,0));
@@ -113,7 +125,7 @@ public class DynamicSolver {
 		tm.start();
 		//String gbk = GbkReader.read("c:\\yandex\\Tests\\gbk_for_students\\ref_chr7_00.gbk");
 		String gbk = GbkReader.read("../ref_chr7_00.gbk");
-		gbk = gbk.substring(0, 100000);
+		//gbk = gbk.substring(0, 100000);
 		GlobalContext.init(gbk);
 		int total = 0;
 		List<CGene> all = new ArrayList<CGene>();
@@ -139,8 +151,14 @@ public class DynamicSolver {
 		for (int i = 0; i < all.size() && i < 100; ++i)
 			System.out.println(all.get(i));
 		System.out.println("Elapsed "+tm);
-		SolutionWriter.write(all.subList(0, 1), "../solution1.txt");
+		tm.reset();
+		tm.start();
+
+		System.out.println("Candidates " + all.size());
+		List<CGene> filtered = GeneSelection.selectOptimal(all, new FamilyCriteria.Weight());
+		System.out.println("After "+filtered.size());
+		SolutionWriter.write(filtered, "../solution1.txt");
 		
-		
+		System.out.println("Elapsed "+tm);
 	}
 }

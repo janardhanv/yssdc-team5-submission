@@ -38,7 +38,7 @@ public class GeneSelection {
 				return o1.g.maxPosition - o2.g.maxPosition;
 			}
 		});
-		for (int i = 0; i < a.size(); i++) {
+		for (int i = 1; i < a.size(); i++) {
 			State s = a.get(i);
 			State x = LowerBound.lastBelow(a.subList(0, i), a.get(i).g.minPosition);
 			s.answer = x.answer + criteria.getWeight(s.g);
@@ -51,7 +51,7 @@ public class GeneSelection {
 			}
 		}
 		List<CGene> res = new ArrayList<CGene>();
-		for (State s = a.get(a.size()-1).best; s != null; s = s.best) {
+		for (State s = a.get(a.size()-1).best; s != null; s = s.prev) {
 			res.add(s.g);
 		}
 		return res;
