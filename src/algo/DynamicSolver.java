@@ -85,7 +85,7 @@ public class DynamicSolver {
 			inside.add(dummy);
 			for (int j = 0; j < i; j++) {
 				if (!(a[i].h.start < a[j].h.getLeft() && a[j].h.getRight() < a[i].h.end)
-						|| a[i].answer == 0)
+						|| a[j].answer == 0)
 					continue;
 				int p = inside.size()-1;
 				while (inside.get(p).h.getRight() >= a[j].h.getLeft())
