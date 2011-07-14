@@ -9,9 +9,9 @@ import algo.DynamicSolver.State;
 public class CGene {
 
 	public List<Helix> helixes;
-	int minPosition;
-	int maxPosition;
-	int pairs;
+	public int minPosition;
+	public int maxPosition;
+	public int pairs;
 	
 	public CGene(List<Helix> helixes) {
 		super();
