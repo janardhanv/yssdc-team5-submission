@@ -1,17 +1,13 @@
 package model;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-
-import algo.DynamicSolver.State;
 
 public class CGene {
 
 	public List<Helix> helixes;
-	int minPosition;
-	int maxPosition;
-	int pairs;
+	public int minPosition;
+	public int maxPosition;
+	public int pairs;
 	
 	public CGene(List<Helix> helixes) {
 		super();
@@ -31,8 +27,8 @@ public class CGene {
 		return "Gene "+getScore()+" "+minPosition+"-"+maxPosition;
 	}
 
-	private double getScore() {
-		return pairs*2.0/(maxPosition - minPosition);
+	public double getScore() {
+		return pairs*2.0/(maxPosition - minPosition + 1);
 	}
 
 }

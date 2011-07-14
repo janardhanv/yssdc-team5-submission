@@ -8,6 +8,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.apache.commons.lang.time.StopWatch;
+
+import model.CGene;
 import model.Constraints;
 import model.GlobalContext;
 import model.Helix;
@@ -18,6 +21,11 @@ public class DynamicSolver {
 		public Helix h;
 		public int answer;
 		public int cumulativeAnswer;
+		public List<State> inner;
+		// last included item
+		public State best;
+		// if included, previous one
+		public State prev;
 		public State(Helix h) {
 			super();
 			this.h = h;
@@ -30,6 +38,12 @@ public class DynamicSolver {
 		public String toString() {
 			return "Score "+getScore()+" span "+h.getSpan()+" top "+h;
 		}
+		public void collectHelixes(List<Helix> helixes) {
+			helixes.add(h);
+			for (State s: inner) {
+				s.collectHelixes(helixes);
+			}
+		}
 	}
 	
 	public State[] a;
@@ -41,7 +55,7 @@ public class DynamicSolver {
 			a[i] = new State(h.get(i));
 	}
 	
-	public List<State> solve() {
+	public List<CGene> solve() {
 		Arrays.sort(a,new Comparator<State>() {
 			@Override
 			public int compare(State x, State y) {
@@ -52,7 +66,7 @@ public class DynamicSolver {
 		});
 		State dummy = new State(new Helix(-1,-1,0));
 		dummy.cumulativeAnswer = 0;
-		List<State> res = new ArrayList<State>();
+		List<CGene> res = new ArrayList<CGene>();
 		for (int i = 0; i < a.length; i++) {
 			ArrayList<State> inside = new ArrayList<State>();
 			inside.add(dummy);
@@ -64,25 +78,42 @@ public class DynamicSolver {
 				while (inside.get(p).h.getRight() >= a[j].h.getLeft())
 					--p;
 				a[j].cumulativeAnswer = inside.get(p).cumulativeAnswer + a[j].answer;
-				a[j].cumulativeAnswer = Math.max(a[j].cumulativeAnswer, inside.get(inside.size()-1).cumulativeAnswer);
+				if (inside.get(inside.size()-1).cumulativeAnswer > a[j].cumulativeAnswer) {
+					a[j].cumulativeAnswer = inside.get(inside.size()-1).cumulativeAnswer;
+					a[j].best = inside.get(inside.size()-1).best;
+				} else {
+					a[j].prev = inside.get(p).best;
+					a[j].best = a[j];
+				}
 				inside.add(a[j]);
+			}
+			if (true) {
+				a[i].inner = new ArrayList<DynamicSolver.State>();
+				for (State s = inside.get(inside.size()-1).best; s != null; s = s.prev) {
+					a[i].inner.add(s);
+				}
 			}
 			a[i].answer = inside.get(inside.size()-1).cumulativeAnswer;
 			// there is something inside or we have a valid hairpin
 			if (a[i].answer > 0 || a[i].h.isHairpin())
 				a[i].answer += a[i].h.len;
 			if (a[i].h.getSpan() >= Constraints.GENE_MIN_LEN && a[i].getScore() >= Constraints.PAIRED_MIN_RATIO)
-				if (!a[i].h.isFAT())
-					res.add(a[i]);
+				if (!a[i].h.isFAT()) {
+					List<Helix> helixes = new ArrayList<Helix>();
+					a[i].collectHelixes(helixes);
+					res.add(new CGene(helixes));
+				}
 		}
 		return res;
 	}
 
 	public static void main(String[] args) throws IOException {
+		StopWatch tm = new StopWatch();
+		tm.start();
 		String gbk = GbkReader.read("c:\\yandex\\Tests\\gbk_for_students\\ref_chr7_00.gbk");
 		GlobalContext.init(gbk);
 		int total = 0;
-		List<State> all = new ArrayList<DynamicSolver.State>();
+		List<CGene> all = new ArrayList<CGene>();
 		for (int i = 0; i < gbk.length(); i+=200) {
 			//if (i%10000 == 0) System.err.println(i);
 			int[] codes = Utils.toInt(gbk.substring(i,Math.min(i+400,gbk.length())));
@@ -90,19 +121,20 @@ public class DynamicSolver {
 			Helix.addShift(helixes, i);
 			//System.out.println(helixes.size());
 			DynamicSolver solver = new DynamicSolver(helixes);
-			List<State> res = solver.solve();
+			List<CGene> res = solver.solve();
 			total += res.size();
 			all.addAll(res);
 		}
-		Collections.sort(all, new Comparator<State>() {
+		Collections.sort(all, new Comparator<CGene>() {
 			@Override
-			public int compare(State arg0, State arg1) {
-				return arg0.h.start - arg1.h.start; 
-				//return Double.compare(arg1.getScore(), arg0.getScore());
+			public int compare(CGene arg0, CGene arg1) {
+				//return arg0.minPosition - arg1.minPosition; 
+				return Double.compare(arg1.getScore(), arg0.getScore());
 			}
 		});
 		System.out.println(total);
 		for (int i = 0; i < all.size() && i < 100; ++i)
-			System.out.println(all.get(i) + " fat " + all.get(i).h.getFAT());
+			System.out.println(all.get(i));
+		System.out.println("Elapsed "+tm);
 	}
 }
