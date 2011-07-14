@@ -13,10 +13,11 @@ import model.CGene;
 import model.Helix;
 
 public class SolutionWriter {
-	
+
 	public final static String teamId = "Team 5";
-	
-	public static void write(List<CGene> genes, String filename) throws IOException {
+
+	public static void write(List<CGene> genes, String filename)
+			throws IOException {
 		PrintWriter out = new PrintWriter(new FileWriter(filename));
 		out.println("> " + teamId);
 		Collections.sort(genes, new Comparator<CGene>() {
@@ -26,8 +27,7 @@ public class SolutionWriter {
 			};
 		});
 		for (CGene cGene : genes) {
-			out.println(cGene.minPosition + " " + cGene.maxPosition + " "
-					+ cGene.pairs);
+			out.println(String.format("%d %d %d", cGene.minPosition + 1, cGene.maxPosition + 1, cGene.pairs));
 			Collections.sort(cGene.helixes, new Comparator<Helix>() {
 				@Override
 				public int compare(Helix o1, Helix o2) {
@@ -35,14 +35,13 @@ public class SolutionWriter {
 				};
 			});
 			for (Helix helix : cGene.helixes) {
-				for (int i = helix.len; i >= 0; --i) {
-					out.println(helix.start - i + " " + helix.end + i);
+				for (int i = helix.len - 1; i >= 0; --i) {
+					out.println(String.format("%d %d", helix.start - i + 1, helix.end + i + 1));
 				}
 			}
-			
+
 		}
-		
-		
+
 		out.close();
 	}
 
