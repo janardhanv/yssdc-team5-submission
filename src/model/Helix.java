@@ -5,6 +5,7 @@ import java.util.Collection;
 import utils.Utils;
 
 public class Helix {
+	// (start,end) - index of innermost pair in the helix
 	public int start;
 	public int end;
 	public int len;
