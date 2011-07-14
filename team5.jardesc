@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="WINDOWS-1251" standalone="no"?>
+<jardesc>
+    <jar path="rna/team5.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/rna/team5.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="false" overwrite="false" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="false" mainClassHandleIdentifier="=rna/src&lt;io{Main.java[Main" manifestLocation="/rna/team5.jar.manifest" manifestVersion="1.0" reuseManifest="true" saveManifest="true" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <file path="/rna/.classpath"/>
+        <javaElement handleIdentifier="=rna/src"/>
+        <file path="/rna/.project"/>
+        <file path="/rna/README"/>
+    </selectedElements>
+</jardesc>

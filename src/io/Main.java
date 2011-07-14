@@ -18,6 +18,7 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		if (args.length < 1 || args.length > 2) {
 			System.err.println("Usage: java -jar rna.jar <gbk> [<output>]");
+			return;
 		}
 		String inputFile = args[0];
 		String outputFile = args.length >= 2 ? args[1] : inputFile.substring(0, inputFile.lastIndexOf('.')) + ".ans";
