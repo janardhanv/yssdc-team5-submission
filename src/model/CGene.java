@@ -9,6 +9,12 @@ public class CGene {
 	public int maxPosition;
 	public int pairs;
 	
+	private CGene(int fix) {
+		minPosition = maxPosition = -1;
+	}
+	
+	public static CGene dummy = new CGene(-1);
+	
 	public CGene(List<Helix> helixes) {
 		super();
 		this.helixes = helixes;
