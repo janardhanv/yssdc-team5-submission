@@ -1,5 +1,6 @@
 package algo;
 import io.GbkReader;
+import io.SolutionWriter;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -110,7 +111,9 @@ public class DynamicSolver {
 	public static void main(String[] args) throws IOException {
 		StopWatch tm = new StopWatch();
 		tm.start();
-		String gbk = GbkReader.read("c:\\yandex\\Tests\\gbk_for_students\\ref_chr7_00.gbk");
+		//String gbk = GbkReader.read("c:\\yandex\\Tests\\gbk_for_students\\ref_chr7_00.gbk");
+		String gbk = GbkReader.read("../ref_chr7_00.gbk");
+		gbk = gbk.substring(0, 100000);
 		GlobalContext.init(gbk);
 		int total = 0;
 		List<CGene> all = new ArrayList<CGene>();
@@ -136,5 +139,8 @@ public class DynamicSolver {
 		for (int i = 0; i < all.size() && i < 100; ++i)
 			System.out.println(all.get(i));
 		System.out.println("Elapsed "+tm);
+		SolutionWriter.write(all.subList(0, 1), "../solution1.txt");
+		
+		
 	}
 }
