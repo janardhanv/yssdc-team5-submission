@@ -3,6 +3,8 @@ package model;
 import java.util.Collection;
 import java.util.List;
 
+import utils.Utils;
+
 public class CGene {
 
 	public List<Helix> helixes;
@@ -46,8 +48,11 @@ public class CGene {
 	}
 		
 	public static CGene deserialize(String s) {
+		//Utils.log("deserializing " + s);
 		List<Helix> helixes = Helix.deserializeList(s);
-		return new CGene(helixes);
+		CGene gene = new CGene(helixes);
+		//Utils.log("after deser" +  gene);
+		return gene;
 	}
 		
 	

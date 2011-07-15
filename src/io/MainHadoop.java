@@ -4,10 +4,12 @@ package io;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
+
+import javax.rmi.CORBA.Util;
 
 import model.CGene;
 import model.FamilyCriteria;
+import model.GlobalContext;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -17,11 +19,11 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
+import utils.Utils;
 import algo.GeneFinder;
 import algo.GenePieceFinder;
 import algo.GeneSelection;
@@ -30,18 +32,25 @@ public class MainHadoop {
 	private final static Text OUT_KEY = new Text(new String("cgene"));
 	
 	public static class MainHadoopMapper extends
-			Mapper<Integer, Text, Text, Text> {
+			Mapper<LongWritable, Text, Text, Text> {
 		
-
 		static GeneFinder geneFinder = new GenePieceFinder();
 		
 		// key - offset
 		// value - substring of rna
-		public void map(Integer key, Text value, Context context)
+		public void map(LongWritable key, Text value, Context context)
 				throws IOException, InterruptedException {
-			List<CGene> genes = geneFinder.findGenes(value.toString());
+			
+			//Utils.log("get " + key );
+			String gbk = value.toString().toUpperCase();
+			GlobalContext.init(gbk);
+			
+			List<CGene> genes = geneFinder.findGenes(gbk);
+			//Utils.log("c-genes search done, "+genes.size()+" c-genes found");
 			for (CGene gene : genes) {
-				gene.addShift(key);
+				//Utils.log("shifting " + gene);
+				gene.addShift((int) key.get());
+				//Utils.log("after shifting: " + gene);
 				Text outValue = new Text(CGene.serialize(gene));
 				context.write(OUT_KEY, outValue);
 			}
@@ -53,10 +62,13 @@ public class MainHadoop {
 		
 		public void reduce(Text key, Iterable<Text> values, Context context)
 				throws IOException, InterruptedException {
-				
+			//Utils.log("reduce: " + key);
+			//Utils.log("value: " + values);
 			List<CGene> all = new ArrayList<CGene>();
 			for (Text value : values) {
+				//Utils.log("value: " + value);
 				CGene gene = CGene.deserialize(value.toString());
+				//Utils.log("Cgene: " + gene);
 				all.add(gene);
 				
 			}
@@ -83,7 +95,7 @@ public class MainHadoop {
 	    job.setReducerClass(MainHadoopReducer.class);
 	    //job.setCombinerClass(MainHadoopMapper.class);
 	    job.setOutputKeyClass(Text.class);
-	    job.setOutputValueClass(LongWritable.class);
+	    job.setOutputValueClass(Text.class);
 	    FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
 	    Path outputpath = new Path(otherArgs[1]);
 	    FileSystem fs = FileSystem.get(new Configuration());

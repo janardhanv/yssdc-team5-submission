@@ -59,10 +59,11 @@ public class Helix {
 	}
 	
 	public static Helix deserialize(String s) {
+		//Utils.log("desering helix: " + s);
 		String[] ss = s.split(" ");
 		int start = Integer.parseInt(ss[0]);
 		int end = Integer.parseInt(ss[1]);
-		int len = Integer.parseInt(ss[1]);
+		int len = Integer.parseInt(ss[2]);
 		return new Helix(start, end, len);
 	}
 	
@@ -71,6 +72,7 @@ public class Helix {
 		List<Helix> res = new ArrayList<Helix>();
 		while (st.hasMoreTokens()) {
 			Helix helix = deserialize(st.nextToken());
+			//Utils.log("after deser:" + helix);
 			res.add(helix);
 		}
 		return res;
