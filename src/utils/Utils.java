@@ -1,6 +1,5 @@
 package utils;
 
-import org.apache.commons.lang.time.StopWatch;
 
 public class Utils {
 	public final static String ALPHABET = "ATGC";
@@ -85,11 +84,7 @@ public class Utils {
 		return isFAT(codes,0,codes.length-1);
 	}
 	
-	static StopWatch globalTime = new StopWatch();
-	static {
-		globalTime.start();
-	}
 	public static void log(String message) {
-		System.out.println(globalTime + " " + message);
+		System.out.println(message);
 	}
 }

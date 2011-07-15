@@ -19,6 +19,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -90,7 +91,6 @@ public class MainHadoop {
 		if (!fs.exists(reduceFile))
 			return;
 
-		long count = 0, length = 0;
 		BufferedReader in = new BufferedReader(new InputStreamReader(fs
 				.open(reduceFile)));
 		
@@ -100,7 +100,7 @@ public class MainHadoop {
 			String s = in.readLine();
 			//Utils.log("analazing string " +  s);
 			StringTokenizer st = new StringTokenizer(s, "\t");
-			String key = st.nextToken();
+			st.nextToken();
 			String value = st.nextToken();
 			CGene gene = CGene.deserialize(value);
 			totalScore += gene.pairs;
@@ -129,6 +129,8 @@ public class MainHadoop {
 	    //job.setCombinerClass(MainHadoopMapper.class);
 	    job.setOutputKeyClass(Text.class);
 	    job.setOutputValueClass(Text.class);
+	    job.setInputFormatClass(org.apache.hadoop.mapreduce.lib.input.TextInputFormat.class);
+	    
 	    FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
 	    Path outputpath = new Path(otherArgs[1]);
 	    FileSystem fs = FileSystem.get(new Configuration());
