@@ -52,22 +52,20 @@ const int kGeneMaxLen = 1024;
 const int kHairpinDistMin = 4;
 const int kHairpinDistMax = 20;
 const int kHelixMin = 4;
-const int kGeneMinLen = 10;
+const int kGeneMinLen = 100;
 const double kPairedMin = 0.6;
 const double kFatMin = 0.35;
 const double kFatMax = 0.65;
 
-const int kShiftLeft = 1000000000;
-const int kShiftRight = 1000000001;
+const int kHeartBeat = 100000;
 
 int n;
 char* s;
 const char* nucle = "ATGC";
 int a[kGeneMaxLen][kGeneMaxLen][2];
 int prv[kGeneMaxLen][kGeneMaxLen][2];
-int fhlx[kGeneMaxLen][kGeneMaxLen];
+int fhlx[kGeneMaxLen];
 int nhlx[kGeneMaxLen][kGeneMaxLen];
-int phlx[kGeneMaxLen][kGeneMaxLen];
 int* fwd;
 int* back;
 int* fatSums;
@@ -76,7 +74,6 @@ int* fatSums;
 #define P(x) prv[(x)%kGeneMaxLen]
 #define FHLX(x) fhlx[(x)%kGeneMaxLen]
 #define NHLX(x) nhlx[(x)%kGeneMaxLen]
-#define PHLX(x) phlx[(x)%kGeneMaxLen]
 
 void readData()
 {
@@ -166,30 +163,38 @@ void solve()
 {
 	REP(end,n)
 	{
+		if (end % kHeartBeat == 0)
+			printf("Heartbeat %d/%d\n",end,n);
+		FHLX(end) = -1;
 		CLEAR(A(end));
 		FOR(len,kHelixMin*2 + kHairpinDistMin, min(kGeneMaxLen-1, end+1))
 		{
 			int start = end-len+1;
+			for (int w = FHLX(end); w != -1; w = NHLX(end)[w])
+			{
+				int t = A(end)[w][0] + A(end-w)[len-w][0];
+				if (t > A(end)[len][0])
+				{
+					A(end)[len][0] = t;
+					P(end)[len][0] = w;
+				}
+			}
 			if (fwd[start] != -1 && fwd[start] == back[end]) // helix
 			{
+				//printf("?? %d %d\n",start,end);
 				A(end)[len][1] = A(end-kHelixMin)[len-2*kHelixMin][0] + kHelixMin;
 				P(end)[len][1] = -kHelixMin;
-				if (A(end-1)[len-2][1]+1 >= A(end)[len][1])
+				if (A(end-1)[len-2][1] > 0 && A(end-1)[len-2][1]+1 >= A(end)[len][1])
 				{
 					A(end)[len][1] = A(end-1)[len-2][1]+1;
 					P(end)[len][1] = P(end-1)[len-2][1]-1;
 				}
-				A(end)[len][0] = A(end)[len][1];
-				P(end)[len][0] = P(end)[len][1];
-			}
-			// TODO: optimize
-			for (int cut = 1; cut < len; ++cut)
-			{
-				int t = A(end)[cut][0] + A(end-cut)[len-cut][0];
-				if (t > A(end)[len][0])
+				NHLX(end)[len] = FHLX(end);
+				FHLX(end) = len;
+				if (A(end)[len][1] > A(end)[len][0])
 				{
-					A(end)[len][0] = t;
-					P(end)[len][0] = cut;
+					A(end)[len][0] = A(end)[len][1];
+					P(end)[len][0] = P(end)[len][1];
 				}
 			}
 			if (len >= kGeneMinLen && A(end)[len][1]*2.0/len >= kPairedMin)
@@ -198,8 +203,18 @@ void solve()
 					// Candidate gene
 					genes.pb(Gene());
 					collect(end,len,genes.back());
-					printf("Gene end %d len %d, score %.6lf\n",end,len,A(end)[len][1]*2.0/len);
+					//printf("Gene end %d len %d, score %.6lf\n",end,len,A(end)[len][1]*2.0/len);
 				}
+			if (A(end)[len-1][0] > A(end)[len][0])
+			{
+				A(end)[len][0] = A(end)[len-1][0];
+				P(end)[len][0] = len-1;
+			}
+			if (A(end-1)[len-1][0] > A(end)[len][0])
+			{
+				A(end)[len][0] = A(end-1)[len-1][0];
+				P(end)[len][0] = 1;
+			}
 		}
 	}
 }
@@ -214,11 +229,13 @@ void write(Gene g)
 int main()
 {
 	freopen("ref_chr7_00.gbk","r",stdin);
+	//freopen("data.in","r",stdin);
 	readData();
-	n=2000;
+	//n=20000;
 	prepareCodes();
 	solve();
-	printf("ans = %d\n",A(n-1)[n][0]);
+	//printf("ans = %d\n",A(n-1)[n][0]);
+	printf("total genes %d\n",SZ(genes));
 	//REP(i,SZ(genes)) write(genes[i]);
 	return 0;
 }
