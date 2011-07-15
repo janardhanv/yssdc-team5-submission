@@ -1,9 +1,12 @@
 package io;
 
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.rmi.CORBA.Util;
 
@@ -81,11 +84,41 @@ public class MainHadoop {
 	}	
 	
 	
+	private static void analyzeResult(Path outDir, String outputFile) throws IOException {
+		FileSystem fs = FileSystem.get(new Configuration());
+		Path reduceFile = new Path(outDir, "part-r-00000");
+		if (!fs.exists(reduceFile))
+			return;
+
+		long count = 0, length = 0;
+		BufferedReader in = new BufferedReader(new InputStreamReader(fs
+				.open(reduceFile)));
+		
+		List<CGene> all = new ArrayList<CGene>();
+		int totalScore = 0;
+		while (in != null && in.ready()) {
+			String s = in.readLine();
+			//Utils.log("analazing string " +  s);
+			StringTokenizer st = new StringTokenizer(s, "\t");
+			String key = st.nextToken();
+			String value = st.nextToken();
+			CGene gene = CGene.deserialize(value);
+			totalScore += gene.pairs;
+			Utils.log("found " + gene);
+			all.add(gene);
+		}
+
+		Utils.log("optimal blocks selected, " + all.size() + " in total");
+		Utils.log("total score: " + totalScore);
+		SolutionWriter.write(all, outputFile);
+	}
+	
+	
 	public static void main(String[] args) throws Exception {
 	    Configuration conf = new Configuration();
 	    String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
-	    if (otherArgs.length != 2) {
-	      System.err.println("Usage: [this] <in> <out>");
+	    if (otherArgs.length != 3) {
+	      System.err.println("Usage: [this] <in> <out> <outputFile>");
 	      System.exit(2);
 	    }
 
@@ -103,6 +136,7 @@ public class MainHadoop {
 	      fs.delete(outputpath, true);
 	    FileOutputFormat.setOutputPath(job, outputpath);
 	    boolean result = job.waitForCompletion(true);
+	    analyzeResult(outputpath, otherArgs[2]);
 	    
 	    System.exit(result ? 0 : 1);
 	  }
