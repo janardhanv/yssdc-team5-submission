@@ -31,7 +31,7 @@ public class Main {
 		Utils.log("c-genes search done, "+all.size()+" c-genes found");
 
 		List<CGene> filtered = GeneSelection.selectOptimal(all, new FamilyCriteria.Weight());
-		Utils.log("optimal blocks selected, "+filtered.size()+" in total");
+		Utils.log("optimal blocks selected, "+filtered.size()+" in total, "+CGene.totalPairs(filtered)+" pairs");
 
 		SolutionWriter.write(filtered, outputFile);
 		

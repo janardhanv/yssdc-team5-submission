@@ -37,4 +37,12 @@ public class CGene {
 		return pairs*2.0/(maxPosition - minPosition + 1);
 	}
 
+	public static int totalPairs(List<CGene> a) {
+		int total = 0;
+		for (CGene cGene : a) {
+			total += cGene.pairs;
+		}
+		return total;
+	}
+
 }

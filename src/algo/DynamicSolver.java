@@ -120,6 +120,7 @@ public class DynamicSolver {
 					List<Helix> helixes = new ArrayList<Helix>();
 					a[i].collectHelixes(helixes);
 					res.add(new CGene(helixes));
+					//if (Math.abs(new CGene(helixes).getScore() - a[i].getScore()) > 0.000001) System.err.println("BAD!");
 				}
 		}
 		return res;
