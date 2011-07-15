@@ -10,7 +10,7 @@ import utils.Utils;
 public class GenePieceFinder implements GeneFinder {
 	
 	public static final int HEARTBEAT = 500000;
-	public static final int BLOCK_SIZE = 400;
+	public static final int BLOCK_SIZE = 1000;
 
 	@Override
 	public List<CGene> findGenes(String gbk) {

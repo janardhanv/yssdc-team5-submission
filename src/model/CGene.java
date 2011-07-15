@@ -22,8 +22,8 @@ public class CGene {
 		maxPosition = helixes.get(0).getRight();
 		pairs = 0;
 		for (Helix helix : helixes) {
-			minPosition = Math.min(minPosition, helixes.get(0).getLeft());
-			maxPosition = Math.max(maxPosition, helixes.get(0).getRight());
+			minPosition = Math.min(minPosition, helix.getLeft());
+			maxPosition = Math.max(maxPosition, helix.getRight());
 			pairs += helix.len;
 		}
 	}
