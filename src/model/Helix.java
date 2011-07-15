@@ -1,6 +1,9 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import utils.Utils;
 
@@ -41,6 +44,39 @@ public class Helix {
 			helix.addShift(shift);
 		}
 	}
+	
+	public static String serialize(Helix helix) {
+		return helix.start + " " + helix.end + " " + helix.len;
+	}
+	
+	public static String serialize(List<Helix> helixes) {
+		String res = "";
+		for (int i = 0; i < helixes.size(); ++i) {
+			if (i > 0) res += "#";
+			res += serialize(helixes.get(i));
+		}
+		return res;
+	}
+	
+	public static Helix deserialize(String s) {
+		String[] ss = s.split(" ");
+		int start = Integer.parseInt(ss[0]);
+		int end = Integer.parseInt(ss[1]);
+		int len = Integer.parseInt(ss[1]);
+		return new Helix(start, end, len);
+	}
+	
+	public static List<Helix> deserializeList(String s) {
+		StringTokenizer st = new StringTokenizer(s, "#");
+		List<Helix> res = new ArrayList<Helix>();
+		while (st.hasMoreTokens()) {
+			Helix helix = deserialize(st.nextToken());
+			res.add(helix);
+		}
+		return res;
+	}
+	
+	
 	public boolean isHairpin() {
 		return Constraints.HAIRPIN_MIN_LEN <= getDist() && getDist() <= Constraints.HAIRPIN_MAX_LEN; 
 	}

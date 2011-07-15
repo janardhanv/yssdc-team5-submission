@@ -1,5 +1,6 @@
 package model;
 
+import java.util.Collection;
 import java.util.List;
 
 public class CGene {
@@ -27,7 +28,29 @@ public class CGene {
 			pairs += helix.len;
 		}
 	}
-
+	
+	public void addShift(int shift) {
+		Helix.addShift(helixes, shift);
+		minPosition += shift;
+		maxPosition += shift;
+	}
+	
+	public static void addShift(Collection<CGene> a, int shift) {
+		for (CGene cGene : a) {
+			cGene.addShift(shift);
+		}
+	}
+	
+	public static String serialize(CGene gene) {
+		return Helix.serialize(gene.helixes);
+	}
+		
+	public static CGene deserialize(String s) {
+		List<Helix> helixes = Helix.deserializeList(s);
+		return new CGene(helixes);
+	}
+		
+	
 	@Override
 	public String toString() {
 		return "Gene "+getScore()+" "+minPosition+"-"+maxPosition;
