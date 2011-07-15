@@ -20,4 +20,15 @@ public class LowerBound {
 			return null;
 		return a.get(left);
 	}
+	
+	public static <T extends IntKey> int lastBelow(T[] a, int left, int right, int key) {
+		while (left < right) {
+			int mid = (left + right + 1) / 2;
+			if (a[mid].getKey() < key)
+				left = mid;
+			else
+				right = mid-1;
+		}
+		return left;
+	}	
 }

@@ -16,10 +16,11 @@ import model.Constraints;
 import model.FamilyCriteria;
 import model.GlobalContext;
 import model.Helix;
+import utils.LowerBound;
 import utils.Utils;
 
 public class DynamicSolver {
-	public static class State {
+	public static class State implements LowerBound.IntKey {
 		public Helix h;
 		public int answer;
 		public int cumulativeAnswer;
@@ -59,6 +60,10 @@ public class DynamicSolver {
 			}
 			System.out.println(prefix+" ]");
 		}
+		@Override
+		public int getKey() {
+			return h.getRight();
+		}
 	}
 	
 	public State[] a;
@@ -80,33 +85,33 @@ public class DynamicSolver {
 		State dummy = new State(new Helix(-1,-1,0));
 		dummy.cumulativeAnswer = 0;
 		List<CGene> res = new ArrayList<CGene>();
+		State[] inside = new State[a.length+1]; 
 		for (int i = 0; i < a.length; i++) {
-			ArrayList<State> inside = new ArrayList<State>();
-			inside.add(dummy);
-			for (int j = 0; j < i; j++) {
-				if (!(a[i].h.start < a[j].h.getLeft() && a[j].h.getRight() < a[i].h.end)
-						|| a[j].answer == 0)
+			int nInside = 0;
+			inside[nInside++] = dummy;
+			for (int j = LowerBound.lastBelow(a, 0, i-1, a[i].h.start+1)+1; j < i; j++) {
+				if (a[j].h.getRight() >= a[i].h.end)
+					break;
+				if (a[i].h.start >= a[j].h.getLeft() || a[j].answer == 0)
 					continue;
-				int p = inside.size()-1;
-				while (inside.get(p).h.getRight() >= a[j].h.getLeft())
-					--p;
-				a[j].cumulativeAnswer = inside.get(p).cumulativeAnswer + a[j].answer;
-				if (inside.get(inside.size()-1).cumulativeAnswer > a[j].cumulativeAnswer) {
-					a[j].cumulativeAnswer = inside.get(inside.size()-1).cumulativeAnswer;
-					a[j].best = inside.get(inside.size()-1).best;
+				int p = LowerBound.lastBelow(inside, 0, nInside-1, a[j].h.getLeft());
+				a[j].cumulativeAnswer = inside[p].cumulativeAnswer + a[j].answer;
+				if (inside[nInside-1].cumulativeAnswer > a[j].cumulativeAnswer) {
+					a[j].cumulativeAnswer = inside[nInside-1].cumulativeAnswer;
+					a[j].best = inside[nInside-1].best;
 				} else {
-					a[j].prev = inside.get(p).best;
+					a[j].prev = inside[p].best;
 					a[j].best = a[j];
 				}
-				inside.add(a[j]);
+				inside[nInside++] = a[j];
 			}
 			if (true) {
 				a[i].inner = new ArrayList<DynamicSolver.State>();
-				for (State s = inside.get(inside.size()-1).best; s != null; s = s.prev) {
+				for (State s = inside[nInside-1].best; s != null; s = s.prev) {
 					a[i].inner.add(s);
 				}
 			}
-			a[i].answer = inside.get(inside.size()-1).cumulativeAnswer;
+			a[i].answer = inside[nInside-1].cumulativeAnswer;
 			// there is something inside or we have a valid hairpin
 			if (a[i].answer > 0 || a[i].h.isHairpin())
 				a[i].answer += a[i].h.len;
@@ -125,13 +130,13 @@ public class DynamicSolver {
 		tm.start();
 		//String gbk = GbkReader.read("c:\\yandex\\Tests\\gbk_for_students\\ref_chr7_00.gbk");
 		String gbk = GbkReader.read("../ref_chr7_00.gbk");
-		//gbk = gbk.substring(0, 100000);
+		gbk = gbk.substring(235700, 236500+10000);
 		GlobalContext.init(gbk);
 		int total = 0;
 		List<CGene> all = new ArrayList<CGene>();
-		for (int i = 0; i < gbk.length(); i+=200) {
+		for (int i = 0; i < gbk.length(); i+=20000) {
 			//if (i%10000 == 0) System.err.println(i);
-			int[] codes = Utils.toInt(gbk.substring(i,Math.min(i+400,gbk.length())));
+			int[] codes = Utils.toInt(gbk.substring(i,Math.min(i+1500,gbk.length())));
 			List<Helix> helixes = HelixFinder.findHelixesUnefficient(codes, 4, 4, 1000000);
 			Helix.addShift(helixes, i);
 			//System.out.println(helixes.size());

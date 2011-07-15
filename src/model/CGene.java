@@ -30,7 +30,7 @@ public class CGene {
 
 	@Override
 	public String toString() {
-		return "Gene "+getScore()+" "+minPosition+"-"+maxPosition;
+		return "Gene "+getScore()+" "+minPosition+"-"+maxPosition+" pairs "+pairs;
 	}
 
 	public double getScore() {
