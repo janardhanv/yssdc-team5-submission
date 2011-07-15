@@ -40,7 +40,7 @@ int main () {
     getline(cin, s);
 
     for (int pos = 0; pos < sz(s); pos += BLOCK_SIZE) {
-        cout << pos << " " << s.substr(pos, BLOCK_SIZE) << endl;
+        cout << pos << "\t" << s.substr(pos, BLOCK_SIZE) << endl;
     }
 
 
