@@ -35,7 +35,7 @@ $HADOOP jar $HADOOP_STREAMING \
     -mapper "./$MAPPER" \
     -reducer org.apache.hadoop.mapred.lib.IdentityReducer \
     
-$HADOOP jar team5.jar gbk/part-00000 tmp $WORK/result.txt
+$HADOOP jar $ROOTDIR/team5.jar gbk/part-00000 tmp $WORK/result.txt
 cp $WORK/result.txt $OUTPUT
 
 #$BINDIR/rnachecker $DATA $WORK/result.txt
