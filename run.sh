@@ -12,8 +12,8 @@ SPLITTED="gbk-splitted"
 MAPPER="genefinder"
 HADOOP=hadoop/bin/hadoop
 HADOOP=hadoop
-BINDIR="$DIRNAME/bin-cpp"
-WORK="$DIRNAME/work"
+BINDIR="$ROOTDIR/bin-cpp"
+WORK="$ROOTDIR/work"
 HADOOP_STREAMING="/usr/lib/hadoop-0.20/contrib/streaming/hadoop-streaming-0.20.2-cdh3u0.jar"
 
 mkdir -p $WORK

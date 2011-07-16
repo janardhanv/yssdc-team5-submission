@@ -27,7 +27,7 @@ typedef vector < vi > vvi;
 
 
 const int kBlockSize = 1e5;
-const int kOverlapSize = 1e3;
+const int kOverlapSize = 3e3;
 
 
 int main () {

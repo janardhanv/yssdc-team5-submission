@@ -72,7 +72,7 @@ public:
 
 Timer timer;
 
-const int kGeneMaxLen = 1024;
+const int kGeneMaxLen = 2048;
 const int kHairpinDistMin = 4;
 const int kHairpinDistMax = 20;
 const int kHelixMin = 4;
@@ -84,7 +84,7 @@ const double kPairedMin = kPairedMin100 * 0.01;
 const double kFatMin = kFatMin100 * 0.01;
 const double kFatMax = kFatMax100 * 0.01;
 
-const int kSideBlocksOverlap = 1024;
+const int kSideBlocksOverlap = 2048;
 
 const int kHeartBeat = 100000;
 const int kMaxLen = 16<<20;
