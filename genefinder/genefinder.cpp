@@ -1,5 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <algorithm>
+#include <cassert>
 #include <numeric>
 #include <string>
 #include <cstring>
@@ -63,7 +64,9 @@ public:
 	}
 	void debug(const string& s)
 	{
-		fprintf(stderr,"%.5lf %s\n",elapsed(),s.data());
+		double e = elapsed();
+		int min = (int)(e/60.0);
+		fprintf(stderr,"%d:%08.5lf %s\n",min,e-min*60,s.data());
 	}
 };
 
@@ -82,28 +85,50 @@ const double kFatMin = kFatMin100 * 0.01;
 const double kFatMax = kFatMax100 * 0.01;
 
 const int kHeartBeat = 100000;
+const int kMaxLen = 16<<20;
 
 int n;
-char* s;
+char s[kMaxLen+1];
 const char* nucle = "ATGC";
 int a[kGeneMaxLen][kGeneMaxLen][2];
 int prv[kGeneMaxLen][kGeneMaxLen][2];
 int fhlx[kGeneMaxLen];
 int nhlx[kGeneMaxLen][kGeneMaxLen];
-int* fwd;
-int* back;
-int* fatSums;
+int fwd[kMaxLen];
+int back[kMaxLen];
+int fatSums[kMaxLen];
+int offset;
 
 #define A(x) a[(x)%kGeneMaxLen]
 #define P(x) prv[(x)%kGeneMaxLen]
 #define FHLX(x) fhlx[(x)%kGeneMaxLen]
 #define NHLX(x) nhlx[(x)%kGeneMaxLen]
 
-void readData()
+#define LOGTO(t,x) { stringstream message; message x; t.debug(message.str()); }
+#define LOG(x) LOGTO(timer,x)
+
+void readGbk()
 {
 	scanf("%d",&n);
-	s = new char[n+1];
+	assert(n < kMaxLen);
 	scanf("%s",s);
+	offset = 0;
+	LOG( << "Read gbk file, length " << n);
+}
+
+bool readSplitted()
+{
+	if (scanf("%d",&offset) != 1)
+		return false;
+	assert(offset >= 0);
+	scanf("%s",s);
+	n = strlen(s);
+	LOG( << "Read piece, offset " << offset << " length " << n);
+	return true;
+}
+
+void prepareCodes()
+{
 	REP(i,n)
 	{
 		s[i] = toupper(s[i]);
@@ -112,12 +137,6 @@ void readData()
 		else
 			s[i] = strchr(nucle,s[i])-nucle;
 	}
-}
-
-void prepareCodes()
-{
-	fwd = new int[n];
-	back = new int[n];
 	REP(i,n)
 	{
 		fwd[i] = 0;
@@ -141,7 +160,6 @@ void prepareCodes()
 			back[i] = back[i]*4 + (s[i-j]^1);
 		}
 	}
-	fatSums = new int[n+1];
 	fatSums[0]=0;
 	REP(i,n)
 	{
@@ -172,7 +190,7 @@ void collect(int end, int len, vector<Helix> &res)
 	if (p < 0)
 	{
 		p=-p;
-		res.pb(Helix(end-len+p,end-p+1,p));
+		res.pb(Helix(end-len+p+offset,end-p+1+offset,p));
 		collect(end-p,len-2*p,res);
 	}
 	else
@@ -189,11 +207,7 @@ void solve()
 	REP(end,n)
 	{
 		if (end % kHeartBeat == 0)
-		{
-			stringstream message;
-			message << "Heartbeat " << end << "/" << n << "\t" << SZ(genes) << " c-genes so far";
-			timer.debug(message.str());
-		}
+			LOG( << "Heartbeat " << end << "/" << n << "\t" << SZ(genes) << " c-genes so far");
 		FHLX(end) = -1;
 		CLEAR(A(end));
 		FOR(len,kHelixMin*2 + kHairpinDistMin, min(kGeneMaxLen-1, end+1))
@@ -274,19 +288,48 @@ string serialize(Gene g)
 	return str.str();
 }
 
-int main()
+void writeAsMapper()
 {
-	freopen("ref_chr7_00.gbk","r",stdin);
-	freopen("results.out","w",stdout);
-	readData();
+	REP(i,SZ(genes))
+		printf("%s\n",serialize(genes[i]));
+}
+
+void writeAsAnswer()
+{
+	printf("%d\n",SZ(genes));
+	REP(i,SZ(genes))
+		write(genes[i]);
+}
+
+void processGbk()
+{
+	readGbk();
 	//n=100000;
 	prepareCodes();
 	solve();
 	//printf("ans = %d\n",A(n-1)[n][0]);
-	fprintf(stderr,"total genes %d\n",SZ(genes));
-	REP(i,SZ(genes))
-		printf("%s\n",serialize(genes[i]));
-	//REP(i,SZ(genes)) write(genes[i]);
+}
+
+void processSplitted()
+{
+	while (readSplitted())
+	{
+		prepareCodes();
+		solve();
+	}
+}
+
+int main()
+{
+	//freopen("ref_chr7_00.gbk","r",stdin);
+	//freopen("split.txt","r",stdin);
+	//freopen("results.out","w",stdout);
+
+	//processGbk();
+	processSplitted();
+	LOG( << "total c-genes " << SZ(genes));
+	writeAsMapper();
+
 	timer.debug("Done!");
 	return 0;
 }
