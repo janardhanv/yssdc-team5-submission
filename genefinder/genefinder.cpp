@@ -94,6 +94,7 @@ int a[kGeneMaxLen][kGeneMaxLen][2];
 int prv[kGeneMaxLen][kGeneMaxLen][2];
 int fhlx[kGeneMaxLen];
 int nhlx[kGeneMaxLen][kGeneMaxLen];
+struct State* st[kGeneMaxLen][kGeneMaxLen];
 int fwd[kMaxLen];
 int back[kMaxLen];
 int fatSums[kMaxLen];
@@ -101,6 +102,7 @@ int offset;
 
 #define A(x) a[(x)%kGeneMaxLen]
 #define P(x) prv[(x)%kGeneMaxLen]
+#define ST(x) st[(x)%kGeneMaxLen]
 #define FHLX(x) fhlx[(x)%kGeneMaxLen]
 #define NHLX(x) nhlx[(x)%kGeneMaxLen]
 
@@ -180,27 +182,50 @@ struct Helix
 	Helix(int s, int e, int l): start(s),end(e),len(l) {}
 };
 
-typedef vector<Helix> Gene;
+int creations = 0;
 
-void collect(int end, int len, vector<Helix> &res)
+struct State
+{
+	Helix helix;
+	State *left,*right;
+	State(Helix h, State *l=0, State *r=0): helix(h),left(l),right(r) {++creations;}
+	void collectHelixes(vector<Helix>& res) const
+	{
+		if (helix.len > 0)
+			res.pb(helix);
+		if (left) left->collectHelixes(res);
+		if (right) right->collectHelixes(res);
+	}
+};
+
+State* retrievePath(int end, int len)
 {
 	if (len <= 0 || A(end)[len][0] == 0)
-		return;
+		return NULL;
+	State* &res = ST(end)[len];
+	if (res != NULL)
+		return res;
 	int p = P(end)[len][0];
 	if (p < 0)
 	{
 		p=-p;
-		res.pb(Helix(end-len+p+offset,end-p+1+offset,p));
-		collect(end-p,len-2*p,res);
+		res = new State(Helix(end-len+p+offset,end-p+1+offset,p),retrievePath(end-p,len-2*p));
 	}
 	else
 	{
-		collect(end-p,len-p,res);
-		collect(end,p,res);
+		State* s1 = retrievePath(end-p,len-p);
+		State* s2 = retrievePath(end,p);
+		if (s2 == 0)
+			res = s1;
+		else if (s1 == 0)
+			res = s2;
+		else
+			res = new State(Helix(0,0,0),s1,s2);
 	}
+	return res;
 }
 
-vector<Gene> genes;
+vector<State*> genes;
 
 void solve()
 {
@@ -210,6 +235,7 @@ void solve()
 			LOG( << "Heartbeat " << end << "/" << n << "\t" << SZ(genes) << " c-genes so far");
 		FHLX(end) = -1;
 		CLEAR(A(end));
+		CLEAR(ST(end));
 		FOR(len,kHelixMin*2 + kHairpinDistMin, min(kGeneMaxLen-1, end+1))
 		{
 			int start = end-len+1;
@@ -252,38 +278,43 @@ void solve()
 				if (!isFat(end-len+1, end))
 				{
 					// Candidate gene
-					genes.pb(Gene());
-					collect(end,len,genes.back());
+					genes.pb(retrievePath(end,len));
 					//fprintf(stderr,"Gene end %d len %d, score %.6lf\n",end,len,A(end)[len][0]*2.0/len);
 				}
 			if (A(end)[len-1][0] > A(end)[len][0])
 			{
 				A(end)[len][0] = A(end)[len-1][0];
 				P(end)[len][0] = len-1;
+				ST(end)[len] = NULL;
 			}
 			if (A(end-1)[len-1][0] > A(end)[len][0])
 			{
 				A(end)[len][0] = A(end-1)[len-1][0];
 				P(end)[len][0] = 1;
+				ST(end)[len] = NULL;
 			}
 		}
 	}
 }
 
-void write(Gene g)
+void write(const State* g)
 {
-	printf("%d\n",SZ(g));
-	REP(i,SZ(g))
-		printf("%d %d %d\n",g[i].start,g[i].end,g[i].len);
+	vector<Helix> h;
+	g->collectHelixes(h);
+	printf("%d\n",SZ(h));
+	REP(i,SZ(h))
+		printf("%d %d %d\n",h[i].start,h[i].end,h[i].len);
 }
 
-string serialize(Gene g)
+string serialize(const State* g)
 {
+	vector<Helix> h;
+	g->collectHelixes(h);
 	stringstream str;
-	REP(i,SZ(g))
+	REP(i,SZ(h))
 	{
 		if (i) str << '#';
-		str << g[i].start << " " << g[i].end << " " << g[i].len;
+		str << h[i].start << " " << h[i].end << " " << h[i].len;
 	}
 	return str.str();
 }
@@ -304,7 +335,7 @@ void writeAsAnswer()
 void processGbk()
 {
 	readGbk();
-	//n=100000;
+	//n=1000000;
 	prepareCodes();
 	solve();
 	//printf("ans = %d\n",A(n-1)[n][0]);
@@ -328,6 +359,7 @@ int main()
 	//processGbk();
 	processSplitted();
 	LOG( << "total c-genes " << SZ(genes));
+	//LOG( << creations << " creations");
 	writeAsMapper();
 
 	timer.debug("Done!");
