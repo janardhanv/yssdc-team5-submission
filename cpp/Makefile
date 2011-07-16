@@ -22,7 +22,7 @@ clean:
     
 distclean:
 	rm -rf *.o
-	rm -rf genefinder
-	rm -rf splitter
+	rm -rf ../bin-cpp/genefinder
+	rm -rf ../bin-cpp/splitter
 
     
