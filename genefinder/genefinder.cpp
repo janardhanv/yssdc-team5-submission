@@ -321,8 +321,9 @@ string serialize(const State* g)
 
 void writeAsMapper()
 {
-	REP(i,SZ(genes))
-		printf("%s\n",serialize(genes[i]));
+	REP(i,SZ(genes)) {
+		printf("cgene\t%s\n",serialize(genes[i]).c_str());
+	}
 }
 
 void writeAsAnswer()
