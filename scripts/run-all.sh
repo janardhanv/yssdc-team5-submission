@@ -20,4 +20,5 @@ $HADOOP jar hadoop/contrib/streaming/hadoop-streaming-0.20.203.0.jar \
     -input "$SPLITTED" \
     -output "gbk" \
     -mapper "./$MAPPER" \
+    -jobconf mapred.map.tasks=1000
 $HADOOP jar yssdc/team5.jar gbk/part-00000 tmp result.txt
