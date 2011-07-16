@@ -343,33 +343,6 @@ void writeAsAnswer()
 			write(genes[i]);
 }
 
-void processGbk()
-{
-	readGbk();
-	//n=1000000;
-	prepareCodes();
-	solve();
-	//printf("ans = %d\n",A(n-1)[n][0]);
-	LOG( << "total c-genes " << SZ(genes));
-	//LOG( << creations << " creations");
-	selectGenes();
-	writeAsMapper();
-}
-
-void processSplitted()
-{
-	while (readSplitted())
-	{
-		genes.clear();
-		prepareCodes();
-		solve();
-		LOG( << "total c-genes " << SZ(genes));
-		LOG( << "========================");
-		selectGenes();
-		writeAsMapper();
-	}
-}
-
 bool cmpGeneEnd(const State* x, const State* y)
 {
 	return x->helix.end < y->helix.end;
@@ -407,6 +380,33 @@ void selectGenes()
 	REP(i,SZ(genes))
 		if (genes[i]->helix.start < kSideBlocksOverlap || genes[i]->helix.end >= n-kSideBlocksOverlap)
 			genes[i]->sel = true;
+}
+
+void processGbk()
+{
+	readGbk();
+	//n=1000000;
+	prepareCodes();
+	solve();
+	//printf("ans = %d\n",A(n-1)[n][0]);
+	LOG( << "total c-genes " << SZ(genes));
+	//LOG( << creations << " creations");
+	selectGenes();
+	writeAsMapper();
+}
+
+void processSplitted()
+{
+	while (readSplitted())
+	{
+		genes.clear();
+		prepareCodes();
+		solve();
+		LOG( << "total c-genes " << SZ(genes));
+		LOG( << "========================");
+		selectGenes();
+		writeAsMapper();
+	}
 }
 
 int main()
