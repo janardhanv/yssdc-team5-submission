@@ -124,7 +124,7 @@ public class MainHadoop {
 
 	    Job job = new Job(conf, "find genes");
 	    job.setJarByClass(MainHadoop.class);
-	    job.setMapperClass(MainHadoopMapper.class);
+	    //job.setMapperClass(MainHadoopMapper.class);
 	    job.setReducerClass(MainHadoopReducer.class);
 	    //job.setCombinerClass(MainHadoopMapper.class);
 	    job.setOutputKeyClass(Text.class);
