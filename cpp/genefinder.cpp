@@ -360,6 +360,7 @@ void processSplitted()
 {
 	while (readSplitted())
 	{
+		genes.clear();
 		prepareCodes();
 		solve();
 		LOG( << "total c-genes " << SZ(genes));
