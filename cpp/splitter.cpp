@@ -26,8 +26,8 @@ typedef vector <int> vi;
 typedef vector < vi > vvi;
 
 
-const int BLOCK_SIZE = 1e5;
-
+const int kBlockSize = 1e5;
+const int kOverlapSize = 1e3;
 
 
 int main () {
@@ -39,8 +39,8 @@ int main () {
     getline(cin, s);
     getline(cin, s);
 
-    for (int pos = 0; pos < sz(s); pos += BLOCK_SIZE) {
-        cout << pos << "\t" << s.substr(pos, BLOCK_SIZE) << endl;
+    for (int pos = 0; pos < sz(s); pos += kBlockSize - kOverlapSize) {
+        cout << pos << "\t" << s.substr(pos, kBlockSize) << endl;
     }
 
 
