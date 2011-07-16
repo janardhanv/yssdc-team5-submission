@@ -46,7 +46,7 @@ public class Hadoop {
 			String value = st.nextToken();
 			CGene gene = CGene.deserialize(value);
 			totalScore += gene.pairs;
-			Utils.log("found " + gene);
+			//Utils.log("found " + gene);
 			all.add(gene);
 		}
 

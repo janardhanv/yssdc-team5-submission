@@ -7,7 +7,8 @@ HADOOP=hadoop/bin/hadoop
 g++ -O2 splitter.cpp -o splitter
 g++ -O2 genefinder.cpp -o genefinder
 
-cat $DATA |./splitter | head -n 3 > data-splitted.txt
+#cat $DATA |./splitter | head -n 3 > data-splitted.txt
+cat $DATA |./splitter  > data-splitted.txt
 
 
 $HADOOP dfs -rmr $SPLITTED
