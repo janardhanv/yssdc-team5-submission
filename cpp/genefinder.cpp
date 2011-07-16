@@ -350,6 +350,10 @@ void processGbk()
 	prepareCodes();
 	solve();
 	//printf("ans = %d\n",A(n-1)[n][0]);
+	LOG( << "total c-genes " << SZ(genes));
+	//LOG( << creations << " creations");
+	selectGenes();
+	writeAsMapper();
 }
 
 void processSplitted()
@@ -358,6 +362,10 @@ void processSplitted()
 	{
 		prepareCodes();
 		solve();
+		LOG( << "total c-genes " << SZ(genes));
+		LOG( << "========================");
+		selectGenes();
+		writeAsMapper();
 	}
 }
 
@@ -408,10 +416,6 @@ int main()
 
 	//processGbk();
 	processSplitted();
-	LOG( << "total c-genes " << SZ(genes));
-	//LOG( << creations << " creations");
-	selectGenes();
-	writeAsMapper();
 
 	timer.debug("Done!");
 	return 0;
