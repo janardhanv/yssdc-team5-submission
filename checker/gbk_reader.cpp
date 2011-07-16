@@ -1,6 +1,6 @@
 #include "gbk_reader.h"
 
-const size_t BUF_LENGTH = 4096;
+const unsigned int BUF_LENGTH = 4096;
 
 // forward declaration
 bool RemoveEndOfLine(char* const str);
@@ -30,19 +30,19 @@ bool GbkReader::IsReady() const
 bool GbkReader::ReadLocus(std::string* locus) const
 {
     locus->clear();
-    size_t length;
-    if (fscanf(m_inFile, "%lu\n", &length) != 1)
+    unsigned int length;
+    if (fscanf(m_inFile, "%u\n", &length) != 1)
     {
         printf("IO error. Invalid header of GBK file.\n");
         return false;
     }
-    printf("Locus length = %lu\n", length);
+    printf("Locus length = %u\n", length);
     char buf[BUF_LENGTH];
     do
     {
         if (!fgets(buf, BUF_LENGTH, m_inFile))
         {
-            printf("IO error. Length of locus read = %lu\n", locus->length());
+            printf("IO error. Length of locus read = %u\n", static_cast<unsigned int>(locus->length()));
             return false;
         }
         RemoveEndOfLine(buf);

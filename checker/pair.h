@@ -21,9 +21,9 @@ struct PairsLimit
 };
 
 
-inline void PrintPair(const Pair& pair, const size_t index)
+inline void PrintPair(const Pair& pair, const unsigned int index)
 {
-    printf("%lu: (%u, %u)\n",
+    printf("%u: (%u, %u)\n",
         index + 1,
         pair.firstNucleotide + 1,
         pair.secondNucleotide + 1);

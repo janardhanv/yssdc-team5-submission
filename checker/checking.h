@@ -3,7 +3,7 @@
 #include <vector>
 
 
-bool CheckPairsForBounds(const Pairs& pairs, const PairsLimit& pairsLimit, const size_t locusLength);
+bool CheckPairsForBounds(const Pairs& pairs, const PairsLimit& pairsLimit, const unsigned int locusLength);
 bool CheckPairsForOrder(const Pairs& pairs);
 bool CheckPairsForComplementarity(const std::string& locus, const Pairs& pairs);
 bool CheckPairsForPseudoknots(const Pairs& pairs);

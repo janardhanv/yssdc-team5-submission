@@ -43,7 +43,7 @@ bool CheckAll(const AnswerReader& answerReader, const std::string& locus)
 
     std::map<unsigned int, unsigned int> totalPairsCount;
     std::map<unsigned int, unsigned int> totalBlocksLength;
-    for (size_t i = 0; i < F_PAIRED_MINS_COUNT; ++i)
+    for (unsigned int i = 0; i < F_PAIRED_MINS_COUNT; ++i)
     {
         const unsigned int category = F_PAIRED_MINS[i];
         totalPairsCount[category] = 0;
@@ -51,9 +51,9 @@ bool CheckAll(const AnswerReader& answerReader, const std::string& locus)
     }
 
     BoundsChecker boundsChecker;
-    for (size_t count = 1; ; ++count)
+    for (unsigned int count = 1; ; ++count)
     {
-        printf("Reading block #%lu...\n", count);
+        printf("Reading block #%u...\n", count);
         Pairs pairs;
         PairsLimit pairsLimit;
         const ReadResult readResult = answerReader.ReadBlock(&pairs, &pairsLimit);
@@ -73,7 +73,7 @@ bool CheckAll(const AnswerReader& answerReader, const std::string& locus)
 
         // printf("%s\n", locus.substr(pairsLimit.firstPosition, GetLength(pairsLimit)).c_str());
 
-        printf("Checking block #%lu...\n", count);
+        printf("Checking block #%u...\n", count);
         if (!boundsChecker.CheckAndAdd(pairsLimit) ||
             !CheckPairsForBounds(pairs, pairsLimit, locus.length()) ||
             !CheckPairsForOrder(pairs) ||
@@ -87,17 +87,16 @@ bool CheckAll(const AnswerReader& answerReader, const std::string& locus)
             return false;
         }
 
-        const unsigned int blockLength = pairsLimit.lastPosition + 1 - pairsLimit.firstPosition;
-        const double fPaired = pairs.size() * 2.0 / blockLength;
-        printf("* fPaired = %.3f\n", fPaired);
-        for (size_t i = 0; i < F_PAIRED_MINS_COUNT; ++i)
+        const unsigned int blockLength = GetLength(pairsLimit);
+        printf("* fPaired = %.3f\n", pairs.size() * 2.0 / blockLength);
+        for (unsigned int i = 0; i < F_PAIRED_MINS_COUNT; ++i)
         {
-            const unsigned int category = F_PAIRED_MINS[i];
-            const double fPairedMin = category * 0.01;
-            if (fPaired >= fPairedMin)
+            const unsigned int fPairedMin = F_PAIRED_MINS[i];
+            // exact comparison
+            if (200 * pairs.size() > fPairedMin * blockLength)
             {
-                totalPairsCount[category] += pairs.size();
-                totalBlocksLength[category] += blockLength;
+                totalPairsCount[fPairedMin] += pairs.size();
+                totalBlocksLength[fPairedMin] += blockLength;
             }
         }
     }
@@ -105,11 +104,10 @@ bool CheckAll(const AnswerReader& answerReader, const std::string& locus)
     printf("OK\n");
     printf("-------------------------------------------------------------------\n");
     printf("fPairedMin ; Total number of base pairings ; Total length of blocks\n");
-    for (size_t i = 0; i < F_PAIRED_MINS_COUNT; ++i)
+    for (unsigned int i = 0; i < F_PAIRED_MINS_COUNT; ++i)
     {
-        const unsigned int category = F_PAIRED_MINS[i];
-        const double fPairedMin = category * 0.01;
-        printf("%.2f ; %u ; %u\n", fPairedMin, totalPairsCount[category], totalBlocksLength[category]);
+        const unsigned int fPairedMin = F_PAIRED_MINS[i];
+        printf("%.2f ; %u ; %u\n", fPairedMin * 0.01, totalPairsCount[fPairedMin], totalBlocksLength[fPairedMin]);
     }
     return true;
 }
@@ -117,7 +115,7 @@ bool CheckAll(const AnswerReader& answerReader, const std::string& locus)
 
 int main(int argc, char* argv[])
 {
-    printf("Rna-Checker ver. 1.14.16.05\n");
+    printf("Rna-Checker ver. 1.16.02.02\n");
     if (argc != 3)
     {
         ShowHelp();

@@ -7,8 +7,8 @@ const unsigned int HAIRPIN_LENGTH_MIN = 5;
 const unsigned int HAIRPIN_LENGTH_MAX = 21;
 const unsigned int HELIX_LENGTH_MIN = 4;
 const unsigned int GENE_LENGTH_MIN = 100;
-const double FAT_MIN = 0.35;
-const double FAT_MAX = 0.65;
+const unsigned int FAT_MIN_PERCENT = 35;
+const unsigned int FAT_MAX_PERCENT = 65;
 
 
 class DoublesFinder
@@ -39,7 +39,7 @@ private:
 };
 
 
-bool CheckPairsForBounds(const Pairs& pairs, const PairsLimit& pairsLimit, const size_t locusLength)
+bool CheckPairsForBounds(const Pairs& pairs, const PairsLimit& pairsLimit, const unsigned int locusLength)
 {
     if ( !(pairsLimit.firstPosition < pairsLimit.lastPosition &&
            pairsLimit.lastPosition < locusLength) )
@@ -48,7 +48,7 @@ bool CheckPairsForBounds(const Pairs& pairs, const PairsLimit& pairsLimit, const
         return false;
     }
     unsigned int maxNucleotidePosition = 0;
-    for (size_t i = 0; i < pairs.size(); ++i)
+    for (unsigned int i = 0; i < pairs.size(); ++i)
     {
         const Pair& pair = pairs[i];
         if ( !(pairsLimit.firstPosition <= pair.firstNucleotide &&
@@ -74,19 +74,23 @@ bool CheckPairsForBounds(const Pairs& pairs, const PairsLimit& pairsLimit, const
         printf("Error. There is unpaired nucleotide on the end of block.\n");
         return false;
     }
-    const unsigned int blockLength = pairsLimit.lastPosition + 1 - pairsLimit.firstPosition;
+    const unsigned int blockLength = GetLength(pairsLimit);
     if (blockLength < GENE_LENGTH_MIN)
     {
         printf("Error. Block is too short, length = %u.\n", blockLength);
         return false;
     }
-    return true;
+    else
+    {
+        printf("* Length = %u\n", blockLength);
+        return true;
+    }
 }
 
 
 bool CheckPairsForOrder(const Pairs& pairs)
 {
-    for (size_t i = 0; i < pairs.size(); ++i)
+    for (unsigned int i = 0; i < pairs.size(); ++i)
     {
         const Pair& pair = pairs[i];
         if (pair.firstNucleotide >= pair.secondNucleotide)
@@ -96,7 +100,7 @@ bool CheckPairsForOrder(const Pairs& pairs)
             return false;
         }
     }
-    for (size_t i = 1; i < pairs.size(); ++i)
+    for (unsigned int i = 1; i < pairs.size(); ++i)
     {
         const Pair& pairPrev = pairs[i-1];
         const Pair& pairNext = pairs[i];
@@ -115,7 +119,7 @@ bool CheckPairsForOrder(const Pairs& pairs)
 bool CheckPairsForUniqueness(const Pairs& pairs)
 {
     DoublesFinder doublesFinder;
-    for (size_t i = 0; i < pairs.size(); ++i)
+    for (unsigned int i = 0; i < pairs.size(); ++i)
     {
         const Pair& pair = pairs[i];
         if (!doublesFinder.AddAndCheck(pair.firstNucleotide))
@@ -136,7 +140,7 @@ bool CheckPairsForUniqueness(const Pairs& pairs)
 bool CheckPairsForComplementarity(const std::string& locus,
                                   const Pairs& pairs)
 {
-    for (size_t i = 0; i < pairs.size(); ++i)
+    for (unsigned int i = 0; i < pairs.size(); ++i)
     {
         const Pair& pair = pairs[i];
         char c1 = locus[pair.firstNucleotide];
@@ -159,9 +163,9 @@ bool CheckPairsForComplementarity(const std::string& locus,
 
 
 bool FindPairByNucleotide(const Pairs pairs, const unsigned int requiredNucleotide,
-                          size_t& resultIndex, Pair* resultPair)
+                          unsigned int& resultIndex, Pair* resultPair)
 {
-    for (size_t index = 0; index < pairs.size(); ++index)
+    for (unsigned int index = 0; index < pairs.size(); ++index)
     {
         const Pair& pair = pairs[index];
         if (pair.firstNucleotide  == requiredNucleotide ||
@@ -179,7 +183,7 @@ bool FindPairByNucleotide(const Pairs pairs, const unsigned int requiredNucleoti
 bool CheckPairsForPseudoknots(const Pairs& pairs)
 {
     std::stack<unsigned int> stack;
-    for (size_t i = 0; i < pairs.size(); ++i)
+    for (unsigned int i = 0; i < pairs.size(); ++i)
     {
         const Pair& pair = pairs[i];
         const unsigned int firstNucl  = pair.firstNucleotide;
@@ -192,7 +196,7 @@ bool CheckPairsForPseudoknots(const Pairs& pairs)
         {
             printf("Error. Pseudoknot in the following lines:\n");
             PrintPair(pair, i);
-            size_t secondIndex;
+            unsigned int secondIndex;
             Pair secondPair;
             FindPairByNucleotide(pairs, stack.top(), secondIndex, &secondPair);
             PrintPair(secondPair, secondIndex);
@@ -204,7 +208,7 @@ bool CheckPairsForPseudoknots(const Pairs& pairs)
 }
 
 
-bool CheckHairpin(const Pair& pair, const size_t index)
+bool CheckHairpin(const Pair& pair, const unsigned int index)
 {
     const unsigned int hairpinLength = pair.secondNucleotide - pair.firstNucleotide;
     if ( !(HAIRPIN_LENGTH_MIN <= hairpinLength && hairpinLength <= HAIRPIN_LENGTH_MAX) )
@@ -219,7 +223,7 @@ bool CheckHairpin(const Pair& pair, const size_t index)
 
 bool CheckPairsForHairpins(const Pairs& pairs)
 {
-    for (size_t i = 0; i + 1 < pairs.size(); ++i)
+    for (unsigned int i = 0; i + 1 < pairs.size(); ++i)
     {
         const Pair& currPair = pairs[i];
         const Pair& nextPair = pairs[i+1];
@@ -231,7 +235,7 @@ bool CheckPairsForHairpins(const Pairs& pairs)
             }
         }
     }
-    const size_t maxIndex = pairs.size() - 1;
+    const unsigned int maxIndex = pairs.size() - 1;
     return CheckHairpin(pairs[maxIndex], maxIndex);
 }
 
@@ -239,7 +243,7 @@ bool CheckPairsForHairpins(const Pairs& pairs)
 bool CheckPairsForHelixLength(const Pairs& pairs)
 {
     unsigned int helixLength = 1;
-    for (size_t i = 1; i < pairs.size(); ++i)
+    for (unsigned int i = 1; i < pairs.size(); ++i)
     {
         const Pair& prevPair = pairs[i-1];
         const Pair& currPair = pairs[i];
@@ -275,8 +279,11 @@ bool CheckPairsForFAT(const std::string& locus, const PairsLimit& pairsLimit)
             ++countAandT;
         }
     }
-    const double fat = countAandT * 1.0 / GetLength(pairsLimit);
-    if ( !(FAT_MIN <= fat && fat <= FAT_MAX) )
+    const unsigned int blockLength = GetLength(pairsLimit);
+    const double fat = countAandT * 1.0 / blockLength;
+    // exact comparison
+    if ( !(FAT_MIN_PERCENT * blockLength <= 100 * countAandT && 
+           100 * countAandT <= FAT_MAX_PERCENT * blockLength)   )
     {
         printf("Error. Inadmissible F_AT = %.3f.\n", fat);
         return false;

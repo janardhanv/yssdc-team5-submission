@@ -2,8 +2,8 @@
 #include <cstring>
 #include <sstream>
 
-const size_t BUF_LENGTH = 4096;
-const size_t MAX_INDEX = 1000000000;
+const unsigned int BUF_LENGTH = 4096;
+const unsigned int MAX_INDEX = 1000000000;
 
 
 bool IsComment(const char* const str)
@@ -18,7 +18,11 @@ bool IsComment(const char* const str)
 
 bool RemoveEndOfLine(char* const str)
 {
-    const size_t length = strlen(str);
+    const unsigned int length = strlen(str);
+    if (0 == length)
+    {
+        return false;
+    }
     char& lastChar = str[length - 1];
     if (13 == lastChar || 10 == lastChar) //  "\r\n" in Windows, "\n" in Unix
     {
@@ -96,9 +100,9 @@ ReadResult AnswerReader::ReadBlock(Pairs* pairs, PairsLimit* pairsLimit) const
         return END_OF_FILE;
     }
     std::stringstream parser(currentBuf);
-    size_t count;
+    unsigned int count;
     parser >> pairsLimit->firstPosition >> pairsLimit->lastPosition >> count;
-    printf("* %lu pairs in block.\n", count);
+    printf("* %u pairs in block.\n", count);
     if (count > MAX_INDEX)
     {
         printf("IO error. Bad count of pairs.\n");
@@ -114,12 +118,12 @@ ReadResult AnswerReader::ReadBlock(Pairs* pairs, PairsLimit* pairsLimit) const
     }
 
     pairs->resize(count);
-    for (size_t index = 0; index < count; ++index)
+    for (unsigned int index = 0; index < count; ++index)
     {
         Pair pair;
         if (!ReadString(currentBuf))
         {
-            printf("IO error. Can't read pair #%lu", index + 1);
+            printf("IO error. Can't read pair #%u", index + 1);
             return ERROR;
         }
         parser.clear();
