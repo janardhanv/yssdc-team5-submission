@@ -291,7 +291,7 @@ string serialize(const Gene& g)
 void writeAsMapper()
 {
 	REP(i,SZ(genes)) {
-		printf("%s\n",serialize(genes[i]).c_str());
+		printf("cgene\t%s\n",serialize(genes[i]).c_str());
 	}
 }
 
