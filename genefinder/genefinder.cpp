@@ -277,7 +277,7 @@ void write(Gene g)
 		printf("%d %d %d\n",g[i].start,g[i].end,g[i].len);
 }
 
-string serialize(Gene g)
+string serialize(const Gene& g)
 {
 	stringstream str;
 	REP(i,SZ(g))
@@ -290,8 +290,9 @@ string serialize(Gene g)
 
 void writeAsMapper()
 {
-	REP(i,SZ(genes))
-		printf("%s\n",serialize(genes[i]));
+	REP(i,SZ(genes)) {
+		printf("%s\n",serialize(genes[i]).c_str());
+	}
 }
 
 void writeAsAnswer()
