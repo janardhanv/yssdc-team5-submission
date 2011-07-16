@@ -10,8 +10,6 @@ g++ -O2 genefinder.cpp -o genefinder
 cat $DATA |./splitter | head -n 3 > data-splitted.txt
 
 
-
-
 $HADOOP dfs -rmr $SPLITTED
 $HADOOP fs -put data-splitted.txt $SPLITTED
 
