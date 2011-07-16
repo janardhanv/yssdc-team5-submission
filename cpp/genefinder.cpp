@@ -280,25 +280,23 @@ void solve()
 					}
 				}
 			}
-			if (len >= kGeneMinLen && A(end)[len][0]*2*100 > kPairedMin100*len)
+			if (A(end)[len-1][0] > A(end)[len][0])
+			{
+				A(end)[len][0] = A(end)[len-1][0];
+				P(end)[len][0] = len-1;
+			}
+			if (A(end-1)[len-1][0] > A(end)[len][0])
+			{
+				A(end)[len][0] = A(end-1)[len-1][0];
+				P(end)[len][0] = 1;
+			}
+			if (len >= kGeneMinLen && A(end)[len][0]*2*100 > kPairedMin100*len && A(end-1)[len-1][0] < A(end)[len][0] && A(end)[len-1][0] < A(end)[len][0])
 				if (!isFat(end-len+1, end))
 				{
 					// Candidate gene
 					genes.pb(retrievePath(end,len));
 					//fprintf(stderr,"Gene end %d len %d, score %.6lf\n",end,len,A(end)[len][0]*2.0/len);
 				}
-			if (A(end)[len-1][0] > A(end)[len][0])
-			{
-				A(end)[len][0] = A(end)[len-1][0];
-				P(end)[len][0] = len-1;
-				ST(end)[len] = NULL;
-			}
-			if (A(end-1)[len-1][0] > A(end)[len][0])
-			{
-				A(end)[len][0] = A(end-1)[len-1][0];
-				P(end)[len][0] = 1;
-				ST(end)[len] = NULL;
-			}
 		}
 	}
 }
@@ -316,6 +314,23 @@ string serialize(const State* g)
 {
 	vector<Helix> h;
 	g->collectHelixes(h);
+	// safety check
+	int mn = h[0].start;
+	int mx = h[0].end;
+	int pairs = 0;
+	REP(i,SZ(h))
+	{
+		mn = min(mn,h[i].start);
+		mx = max(mx,h[i].end);
+		pairs += h[i].len;
+	}
+	int len = mx-mn+1;
+	if (!(len >= kGeneMinLen && pairs*2*100 > kPairedMin100*len && !isFat(mn,mx)))
+	{
+		LOG(<<"ACHTUNG!!! Invalid gene, skipping it");
+		return "";
+	}
+
 	stringstream str;
 	REP(i,SZ(h))
 	{
@@ -329,7 +344,11 @@ void writeAsMapper()
 {
 	REP(i,SZ(genes))
 		if (genes[i]->sel)
-			printf("cgene\t%s\n",serialize(genes[i]).c_str());
+		{
+			string s = serialize(genes[i]);
+			if (!s.empty())
+				printf("cgene\t%s\n",s.c_str());
+		}
 }
 
 void writeAsAnswer()
