@@ -74,9 +74,12 @@ const int kHairpinDistMin = 4;
 const int kHairpinDistMax = 20;
 const int kHelixMin = 4;
 const int kGeneMinLen = 100;
-const double kPairedMin = 0.6;
-const double kFatMin = 0.35;
-const double kFatMax = 0.65;
+const int kPairedMin100 = 60;
+const int kFatMin100 = 35;
+const int kFatMax100 = 65;
+const double kPairedMin = kPairedMin100 * 0.01;
+const double kFatMin = kFatMin100 * 0.01;
+const double kFatMax = kFatMax100 * 0.01;
 
 const int kHeartBeat = 100000;
 
@@ -146,10 +149,11 @@ void prepareCodes()
 	}
 }
 
-bool isFat(int s, int e)
+inline bool isFat(int s, int e)
 {
-	double fat = (fatSums[e+1] - fatSums[s])/(double)(e-s+1);
-	return kFatMin > fat || fat > kFatMax;
+	int sum = fatSums[e+1] - fatSums[s];
+	int len = e-s+1;
+	return kFatMin100*len > sum*100 || sum*100 > kFatMax100*len;
 }
 
 struct Helix
