@@ -84,6 +84,8 @@ const double kPairedMin = kPairedMin100 * 0.01;
 const double kFatMin = kFatMin100 * 0.01;
 const double kFatMax = kFatMax100 * 0.01;
 
+const int kSideBlocksOverlap = 1024;
+
 const int kHeartBeat = 100000;
 const int kMaxLen = 16<<20;
 
@@ -180,6 +182,8 @@ struct Helix
 {
 	int start,end,len;
 	Helix(int s, int e, int l): start(s),end(e),len(l) {}
+	int getJStart() { return start+len-1+offset; }
+	int getJEnd() { return end-len+1+offset; }
 };
 
 int creations = 0;
@@ -188,7 +192,9 @@ struct State
 {
 	Helix helix;
 	State *left,*right;
-	State(Helix h, State *l=0, State *r=0): helix(h),left(l),right(r) {++creations;}
+	int value;
+	bool sel;
+	State(Helix h, int v, State *l=0, State *r=0): helix(h),value(v),left(l),right(r),sel(false) {++creations;}
 	void collectHelixes(vector<Helix>& res) const
 	{
 		if (helix.len > 0)
@@ -209,7 +215,7 @@ State* retrievePath(int end, int len)
 	if (p < 0)
 	{
 		p=-p;
-		res = new State(Helix(end-len+p+offset,end-p+1+offset,p),retrievePath(end-p,len-2*p));
+		res = new State(Helix(end-len+1,end,p),A(end)[len][0],retrievePath(end-p,len-2*p));
 	}
 	else
 	{
@@ -220,7 +226,7 @@ State* retrievePath(int end, int len)
 		else if (s1 == 0)
 			res = s2;
 		else
-			res = new State(Helix(0,0,0),s1,s2);
+			res = new State(Helix(end-len+1,end,0),A(end)[len][0],s1,s2);
 	}
 	return res;
 }
@@ -303,7 +309,7 @@ void write(const State* g)
 	g->collectHelixes(h);
 	printf("%d\n",SZ(h));
 	REP(i,SZ(h))
-		printf("%d %d %d\n",h[i].start,h[i].end,h[i].len);
+		printf("%d %d %d\n",h[i].getJStart(),h[i].getJEnd(),h[i].len);
 }
 
 string serialize(const State* g)
@@ -314,23 +320,27 @@ string serialize(const State* g)
 	REP(i,SZ(h))
 	{
 		if (i) str << '#';
-		str << h[i].start << " " << h[i].end << " " << h[i].len;
+		str << h[i].getJStart() << " " << h[i].getJEnd() << " " << h[i].len;
 	}
 	return str.str();
 }
 
 void writeAsMapper()
 {
-	REP(i,SZ(genes)) {
-		printf("cgene\t%s\n",serialize(genes[i]).c_str());
-	}
+	REP(i,SZ(genes))
+		if (genes[i]->sel)
+			printf("cgene\t%s\n",serialize(genes[i]).c_str());
 }
 
 void writeAsAnswer()
 {
+	int k = 0;
+	REP(i,SZ(genes))
+		k += genes[i]->sel;
 	printf("%d\n",SZ(genes));
 	REP(i,SZ(genes))
-		write(genes[i]);
+		if (genes[i]->sel)
+			write(genes[i]);
 }
 
 void processGbk()
@@ -351,6 +361,45 @@ void processSplitted()
 	}
 }
 
+bool cmpGeneEnd(const State* x, const State* y)
+{
+	return x->helix.end < y->helix.end;
+}
+
+void selectGenes()
+{
+	static int sum[kMaxLen];
+	static State* prev[kMaxLen];
+	sort(ALL(genes),cmpGeneEnd);
+	int p = 0;
+	sum[0] = 0;
+	prev[0] = NULL;
+	FOR(i,1,n-1)
+	{
+		if (i)
+			sum[i] = sum[i-1];
+		for (; p < SZ(genes) && genes[p]->helix.end == i; p++)
+		{
+			int t = genes[p]->value;
+			if (genes[p]->helix.start > 0)
+				t += sum[genes[p]->helix.start-1];
+			if (t > sum[i])
+			{
+				sum[i] = t;
+				prev[i] = genes[p];
+			}
+		}
+	}
+	for (int i = n-1; i >= 0; i = prev[i] ? prev[i]->helix.start-1 : i-1)
+	{
+		if (prev[i])
+			prev[i]->sel = true;
+	}
+	REP(i,SZ(genes))
+		if (genes[i]->helix.start < kSideBlocksOverlap || genes[i]->helix.end >= n-kSideBlocksOverlap)
+			genes[i]->sel = true;
+}
+
 int main()
 {
 	//freopen("ref_chr7_00.gbk","r",stdin);
@@ -361,6 +410,7 @@ int main()
 	processSplitted();
 	LOG( << "total c-genes " << SZ(genes));
 	//LOG( << creations << " creations");
+	selectGenes();
 	writeAsMapper();
 
 	timer.debug("Done!");
