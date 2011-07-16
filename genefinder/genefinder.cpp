@@ -280,7 +280,7 @@ void solve()
 					}
 				}
 			}
-			if (len >= kGeneMinLen && A(end)[len][0]*2.0/len > kPairedMin + eps)
+			if (len >= kGeneMinLen && A(end)[len][0]*2*100 > kPairedMin100*len)
 				if (!isFat(end-len+1, end))
 				{
 					// Candidate gene
