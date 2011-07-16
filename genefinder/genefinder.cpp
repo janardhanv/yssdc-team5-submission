@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
+#include <ctime>
 
 using namespace std;
 
@@ -47,6 +48,26 @@ typedef vector<PII> VPII;
 typedef vector<int> VI;
 typedef vector<VI> VVI;
 typedef long long LL;
+
+class Timer
+{
+	clock_t time_start;
+public:
+	Timer()
+	{
+		time_start = clock();
+	}
+	double elapsed()
+	{
+		return (clock()-time_start)/(double)CLOCKS_PER_SEC;
+	}
+	void debug(const string& s)
+	{
+		fprintf(stderr,"%.5lf %s\n",elapsed(),s.data());
+	}
+};
+
+Timer timer;
 
 const int kGeneMaxLen = 1024;
 const int kHairpinDistMin = 4;
@@ -164,46 +185,58 @@ void solve()
 	REP(end,n)
 	{
 		if (end % kHeartBeat == 0)
-			printf("Heartbeat %d/%d\n",end,n);
+		{
+			stringstream message;
+			message << "Heartbeat " << end << "/" << n << "\t" << SZ(genes) << " c-genes so far";
+			timer.debug(message.str());
+		}
 		FHLX(end) = -1;
 		CLEAR(A(end));
 		FOR(len,kHelixMin*2 + kHairpinDistMin, min(kGeneMaxLen-1, end+1))
 		{
 			int start = end-len+1;
 			for (int w = FHLX(end); w != -1; w = NHLX(end)[w])
-			{
-				int t = A(end)[w][0] + A(end-w)[len-w][0];
-				if (t > A(end)[len][0])
+				if (A(end-w)[len-w][0] > 0 && P(end-w)[len-w][0] != (len-w-1))
 				{
-					A(end)[len][0] = t;
-					P(end)[len][0] = w;
+					int t = A(end)[w][0] + A(end-w)[len-w][0];
+					if (t > A(end)[len][0])
+					{
+						A(end)[len][0] = t;
+						P(end)[len][0] = w;
+					}
 				}
-			}
 			if (fwd[start] != -1 && fwd[start] == back[end]) // helix
 			{
 				//printf("?? %d %d\n",start,end);
-				A(end)[len][1] = A(end-kHelixMin)[len-2*kHelixMin][0] + kHelixMin;
-				P(end)[len][1] = -kHelixMin;
+				A(end)[len][1] = A(end-kHelixMin)[len-2*kHelixMin][0];
+				if (A(end)[len][1] > 0 || len-2*kHelixMin <= kHairpinDistMax)
+				{
+					A(end)[len][1] += kHelixMin;
+					P(end)[len][1] = -kHelixMin;
+				}
 				if (A(end-1)[len-2][1] > 0 && A(end-1)[len-2][1]+1 >= A(end)[len][1])
 				{
 					A(end)[len][1] = A(end-1)[len-2][1]+1;
 					P(end)[len][1] = P(end-1)[len-2][1]-1;
 				}
-				NHLX(end)[len] = FHLX(end);
-				FHLX(end) = len;
-				if (A(end)[len][1] > A(end)[len][0])
+				if (A(end)[len][1] > 0)
 				{
-					A(end)[len][0] = A(end)[len][1];
-					P(end)[len][0] = P(end)[len][1];
+					NHLX(end)[len] = FHLX(end);
+					FHLX(end) = len;
+					if (A(end)[len][1] > A(end)[len][0])
+					{
+						A(end)[len][0] = A(end)[len][1];
+						P(end)[len][0] = P(end)[len][1];
+					}
 				}
 			}
-			if (len >= kGeneMinLen && A(end)[len][1]*2.0/len >= kPairedMin)
+			if (len >= kGeneMinLen && A(end)[len][0]*2.0/len > kPairedMin)
 				if (!isFat(end-len+1, end))
 				{
 					// Candidate gene
 					genes.pb(Gene());
 					collect(end,len,genes.back());
-					//printf("Gene end %d len %d, score %.6lf\n",end,len,A(end)[len][1]*2.0/len);
+					//fprintf(stderr,"Gene end %d len %d, score %.6lf\n",end,len,A(end)[len][0]*2.0/len);
 				}
 			if (A(end)[len-1][0] > A(end)[len][0])
 			{
@@ -226,16 +259,30 @@ void write(Gene g)
 		printf("%d %d %d\n",g[i].start,g[i].end,g[i].len);
 }
 
+string serialize(Gene g)
+{
+	stringstream str;
+	REP(i,SZ(g))
+	{
+		if (i) str << '#';
+		str << g[i].start << " " << g[i].end << " " << g[i].len;
+	}
+	return str.str();
+}
+
 int main()
 {
 	freopen("ref_chr7_00.gbk","r",stdin);
-	//freopen("data.in","r",stdin);
+	freopen("results.out","w",stdout);
 	readData();
-	//n=20000;
+	//n=100000;
 	prepareCodes();
 	solve();
 	//printf("ans = %d\n",A(n-1)[n][0]);
-	printf("total genes %d\n",SZ(genes));
+	fprintf(stderr,"total genes %d\n",SZ(genes));
+	REP(i,SZ(genes))
+		printf("%s\n",serialize(genes[i]));
 	//REP(i,SZ(genes)) write(genes[i]);
+	timer.debug("Done!");
 	return 0;
 }
