@@ -31,7 +31,7 @@ $HADOOP dfs -rmr tmp
 
 
 $HADOOP jar $HADOOP_STREAMING \
-    -D mapred.map.tasks=1000 \
+    -D mapred.map.tasks=1500 \
     -file "$BINDIR/$MAPPER" \
     -input "$SPLITTED" \
     -output "gbk" \
